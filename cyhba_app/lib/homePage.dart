@@ -1,58 +1,134 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  File? _image;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.blue,
         title: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min, // Ajusta el tamaño del Row al contenido
           children: [
-            Icon(Icons.health_and_safety, color: Colors.white),
-            SizedBox(width: 8),
-            Text("Cybha", style: TextStyle(fontSize: 20)),
+            Text(
+              'CYHBA',
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.2,
+                color: Colors.white,
+              ),
+            ),
+            SizedBox(width: 10), // Espaciado entre el título y el avatar
+            CircleAvatar(
+              radius: 16, // Tamaño del avatar
+              backgroundImage: AssetImage('assets/onlyheart.jpg'),
+            ),
           ],
         ),
-        centerTitle: true,
         leading: IconButton(
           icon: Icon(Icons.menu),
-          onPressed: () {},
+          color: Colors.white,
+          onPressed: () {
+            //Navigator.pop(context);
+          },
         ),
+        backgroundColor: Color(0xFF2C3E50),
+        centerTitle: true,
       ),
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircleAvatar(
-            radius: 60,
-            backgroundImage: NetworkImage(
-              'https://via.placeholder.com/150', // Reemplaza con tu URL de imagen
-            ),
+      body: Center( // Centra el contenido
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              // Avatar con imagen seleccionada o predeterminada
+              GestureDetector(
+                onTap: _pickImage, // Al tocar la imagen, se selecciona otra
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 70,
+                      backgroundImage: _image != null
+                          ? FileImage(_image!) // Muestra la imagen seleccionada
+                          : null,
+                      backgroundColor: Colors.transparent,
+                      child: _image == null
+                          ? Icon(Icons.person, size: 100, color: Colors.grey) // Icono de persona
+                          : null,
+                    ),
+                    if (_image == null) // Si no hay imagen, agregar icono de cámara
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: Icon(
+                          Icons.camera_alt,
+                          color: Colors.black,
+                          size: 28,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              // Nombre con estilo
+              Text(
+                'Jane Doe',
+                style: TextStyle(
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 16),
+              // Botón estilizado
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/estadoSaludUno');
+                },
+                child: Text("Iniciar Diagnóstico"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.lightBlueAccent, // Color de fondo
+                  foregroundColor: Colors.white, // Color del texto
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+              // Texto informativo con estilo
+              Text(
+                "Frecuencia consumo: Moderado",
+                style: TextStyle(
+                  fontSize: 18,
+                  color: Colors.black54,
+                ),
+              ),
+            ],
           ),
-          SizedBox(height: 16),
-          Text(
-            'Jane',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              // Acción del botón
-            },
-            child: Text("Iniciar Diagnóstico"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.grey[300],
-              foregroundColor: Colors.black,
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              textStyle: TextStyle(fontSize: 16),
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            "Frecuencia consumo: Moderado",
-            style: TextStyle(fontSize: 16),
-          ),
-        ],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         items: [
@@ -73,6 +149,8 @@ class HomeScreen extends StatelessWidget {
         onTap: (index) {
           // Manejar la navegación entre botones
         },
+        selectedItemColor: Colors.blueAccent,
+        unselectedItemColor: Colors.black54,
       ),
     );
   }

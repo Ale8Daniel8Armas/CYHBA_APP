@@ -19,11 +19,18 @@ class _saludHistoricaPageScreenState extends State<saludHistoricaPageScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sobre ti'),
+        title: Text('Sobre ti',
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
+          color: Colors.white,
           onPressed: () {
-            Navigator.pop(context); // Volver a la pantalla anterior
+            Navigator.pop(context);
           },
         ),
         actions: [
@@ -35,12 +42,14 @@ class _saludHistoricaPageScreenState extends State<saludHistoricaPageScreen> {
           )
         ],
         backgroundColor: Color(0xFF2C3E50),
+        centerTitle: true,
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            SizedBox(height: 20),
             preguntaDropdown(
               context,
               '¿Algún familiar tuyo tiene una enfermedad?',
@@ -86,36 +95,31 @@ class _saludHistoricaPageScreenState extends State<saludHistoricaPageScreen> {
               },
             ),
             Spacer(),
-            ElevatedButton(
+            Center(
+            child: ElevatedButton(
               onPressed: () {
-                // Acción al presionar "Siguiente"
                 if (selectedFamiliarEnfermo != null &&
                     selectedEnfermedadCardiaca != null &&
                     selectedDiabetes != null &&
                     selectedObesidad != null) {
-                  // Continuar con el flujo
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Información guardada correctamente')),
                   );
                 } else {
-                  // Mostrar error si hay campos vacíos
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Por favor completa todas las preguntas')),
                   );
                 }
                 Navigator.pushNamed(context, '/home');
               },
+              child: Text("Siguiente"),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.green,
-                padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                backgroundColor: Colors.grey[300],
+                foregroundColor: Colors.black,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                textStyle: TextStyle(fontSize: 16),
               ),
-              child: Text(
-                'Siguiente',
-                style: TextStyle(fontSize: 16),
-              ),
+            ),
             ),
           ],
         ),
@@ -123,7 +127,6 @@ class _saludHistoricaPageScreenState extends State<saludHistoricaPageScreen> {
     );
   }
 
-  // Widget para las preguntas con Dropdown
   Widget preguntaDropdown(
       BuildContext context,
       String pregunta,
