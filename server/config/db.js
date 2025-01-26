@@ -1,9 +1,19 @@
 const mongoose = require('mongoose');
+const password = encodeURIComponent("#Barcelona2002");
+const database = encodeURIComponent("users");
 
-const connection = mongoose.createConnection('mongodb://localhost:27017/cyhbaDB').on('open',()=>{
-    console.log("Mongodb.Connection");
-}).on('error',()=>{
-    console.log("Mongodb connect error");
+// Cadena de conexión a MongoDB Atlas
+const uri = `mongodb+srv://alejodany02:${password}@cyhbacluster.ngjmz.mongodb.net/${database}?retryWrites=true&w=majority&appName=CyhbaCluster`;
+
+// Conexión a MongoDB Atlas
+mongoose.connect(uri, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+}).then(() => {
+    console.log("Connected to MongoDB Atlas");
+}).catch((error) => {
+    console.error("MongoDB connection error:", error);
 });
 
-module.exports = connection;
+// Exportar la conexión de mongoose
+module.exports = mongoose;

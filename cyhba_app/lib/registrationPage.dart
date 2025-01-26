@@ -1,11 +1,61 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'loginPage.dart';
+import 'package:velocity_x/velocity_x.dart';
+import 'package:http/http.dart' as http;
+import 'config.dart';
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
+  @override
+  _RegisterPageState createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  bool isNotValidate = false;
+
+  void registerUser() async {
+    if(emailController.text.isNotEmpty && passwordController.text.isNotEmpty){
+      var regBody = {
+        "email": emailController.text,
+        "password": passwordController.text
+      };
+
+      try {
+        var response = await http.post(
+            Uri.parse(registration),
+            headers: {"Content-Type": "application/json"},
+            body: jsonEncode(regBody)
+        );
+
+        print('Response status: ${response.statusCode}');
+        print('Response body: ${response.body}');
+
+        if (response.statusCode == 200) {
+          var jsonResponse = jsonDecode(response.body);
+          print(jsonResponse['status']);
+
+          if(jsonResponse['status']){
+            Navigator.pushNamed(context, '/login');
+          } else {
+            print("Registration failed");
+          }
+        } else {
+          print('Server error: ${response.statusCode}');
+        }
+      } catch (e) {
+        print('Error during registration: $e');
+      }
+    } else {
+      setState(() {
+        isNotValidate = true;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final emailController = TextEditingController();
-    final passwordController = TextEditingController();
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF2C3E50),
@@ -102,7 +152,7 @@ class RegisterPage extends StatelessWidget {
                     ElevatedButton(
                       onPressed: () {
                         // Regresar a la página de login
-                        Navigator.pop(context);
+                        registerUser();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
@@ -121,8 +171,7 @@ class RegisterPage extends StatelessWidget {
                     // Botón Cancelar
                     ElevatedButton(
                       onPressed: () {
-                        // Regresar a la página de login
-                        Navigator.pop(context);
+                        Navigator.pushNamed(context, '/login');
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,

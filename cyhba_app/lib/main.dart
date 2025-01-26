@@ -15,6 +15,7 @@ import '../vistasDiagnostico/CantidaAlcohol.dart';
 import '../vistasDiagnostico/FrecuenciaAlcohol.dart';
 import '../vistasDiagnostico/CigarrilloPage.dart';
 import '../resultadosPage.dart';
+import '../loginPage.dart';
 import 'homePage.dart';
 
 void main() {
@@ -30,9 +31,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: '/',
+      initialRoute: '/login',
       routes: {
-        '/': (context) => LoginPage(),
+        '/login': (context) => LoginPage(),
         '/registration': (context) => RegisterPage(),
         '/edadGenero': (context) => EdadGeneroPageScreen(),
         '/localidadOcupacion': (context) => LocalidadOcupacionPageScreen(),
