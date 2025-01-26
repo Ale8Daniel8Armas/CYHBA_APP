@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 import 'loginPage.dart';
 import 'registrationPage.dart';
 import '../vistasPerfil/edadGeneroPage.dart';
@@ -15,14 +17,31 @@ import '../vistasDiagnostico/CantidaAlcohol.dart';
 import '../vistasDiagnostico/FrecuenciaAlcohol.dart';
 import '../vistasDiagnostico/CigarrilloPage.dart';
 import '../resultadosPage.dart';
-import '../loginPage.dart';
 import 'homePage.dart';
 
 void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  late Future<String?> _tokenFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _tokenFuture = _getToken();
+  }
+
+  Future<String?> _getToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('token');
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -35,7 +54,7 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => LoginPage(),
         '/registration': (context) => RegisterPage(),
-        '/edadGenero': (context) => EdadGeneroPageScreen(),
+        '/edadGenero': (context) => EdadGeneroPageScreen(token:_getToken()),
         '/localidadOcupacion': (context) => LocalidadOcupacionPageScreen(),
         '/saludHistorica': (context) => saludHistoricaPageScreen(),
         '/estadoSaludUno': (context) => EstadoSaludOneScreen(),
@@ -51,6 +70,21 @@ class MyApp extends StatelessWidget {
         '/resultado': (context) => ResultadosScreen(),
         '/home': (context) => HomeScreen(),
       },
+      home: FutureBuilder<String?>(
+        future: _tokenFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return CircularProgressIndicator();
+          } else if (snapshot.hasError || snapshot.data == null || JwtDecoder.isExpired(snapshot.data!)) {
+            return LoginPage();
+          } else {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              setState(() {});
+            });
+            return EdadGeneroPageScreen(token: snapshot.data!);
+          }
+        },
+      ),
     );
   }
 }

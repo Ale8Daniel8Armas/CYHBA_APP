@@ -1,11 +1,44 @@
 import 'package:flutter/material.dart';
+import 'package:jwt_decoder/jwt_decoder.dart';
 
 class EdadGeneroPageScreen extends StatefulWidget {
+  final token;
+  const EdadGeneroPageScreen({Key? key, required this.token}) : super(key: key);
+
   @override
-  _EdadGeneroPageScreenState createState() => _EdadGeneroPageScreenState();
+  State<EdadGeneroPageScreen> createState() => _EdadGeneroPageScreenState();
 }
 
 class _EdadGeneroPageScreenState extends State<EdadGeneroPageScreen> {
+  late String email;
+
+  @override
+  void initState() {
+    super.initState();
+
+    print("Token recibido: ${widget.token}"); // Depuración del token
+
+    if (widget.token == null || JwtDecoder.isExpired(widget.token)) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.pushReplacementNamed(context, '/login');
+        print("Token inválido o nulo");
+      });
+    } else {
+      try {
+        Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
+        print("Token decodificado: $jwtDecodedToken"); // Depuración del token decodificado
+        email = jwtDecodedToken['email'];
+      } catch (e) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          Navigator.pushReplacementNamed(context, '/login');
+          print("Error al decodificar el token: $e");
+        });
+      }
+    }
+  }
+
+
+
   String? selectedGender;
   final TextEditingController ageController = TextEditingController();
 

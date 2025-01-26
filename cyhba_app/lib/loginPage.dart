@@ -1,6 +1,69 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'vistasPerfil/edadGeneroPage.dart';
+import 'dart:convert';
+import 'config.dart';
 
-class LoginPage extends StatelessWidget {
+class LoginPage extends StatefulWidget {
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  bool isNotValidate = false;
+  late SharedPreferences prefs;
+
+  @override
+  void initState() {
+    super.initState();
+    initSharedPref();
+  }
+
+  void initSharedPref() async {
+      prefs = await SharedPreferences.getInstance();
+  }
+
+  void loginUser() async {
+    if (emailController.text.isNotEmpty && passwordController.text.isNotEmpty) {
+      var regBody = {
+        "email": emailController.text,
+        "password": passwordController.text,
+      };
+
+      var response = await http.post(
+        Uri.parse(login),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode(regBody),
+      );
+
+      var jsonResponse = jsonDecode(response.body);
+      if (jsonResponse['status']) {
+        var myToken = jsonResponse['token'];
+        prefs.setString('token', myToken);
+
+        // Redirigir con Navigator.push y pasar el token como argumento
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EdadGeneroPageScreen(token: myToken),
+          ),
+        );
+      } else {
+        print("Algo malo ha ocurrido");
+      }
+    } else {
+      setState(() {
+        isNotValidate = true;
+      });
+      print("Campos vacíos");
+    }
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -43,6 +106,7 @@ class LoginPage extends StatelessWidget {
                   children: [
                     // Campo Usuario/Correo
                     TextField(
+                      controller: emailController,
                       decoration: InputDecoration(
                         labelText: 'Usuario/Correo:',
                         labelStyle: const TextStyle(color: Colors.white),
@@ -56,6 +120,7 @@ class LoginPage extends StatelessWidget {
                     const SizedBox(height: 20),
                     // Campo Contraseña
                     TextField(
+                      controller: passwordController,
                       obscureText: true,
                       decoration: InputDecoration(
                         labelText: 'Contraseña:',
@@ -74,8 +139,7 @@ class LoginPage extends StatelessWidget {
               // Botón Inicio Sesion
               ElevatedButton(
                 onPressed: () {
-                  // Acción para el botón de inicio de sesion
-                  Navigator.pushNamed(context, '/edadGenero');
+                  loginUser();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
