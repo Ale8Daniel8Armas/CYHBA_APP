@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class EdadGeneroPageScreen extends StatefulWidget {
   final token;
@@ -12,6 +14,7 @@ class EdadGeneroPageScreen extends StatefulWidget {
 class _EdadGeneroPageScreenState extends State<EdadGeneroPageScreen> {
   late String email;
 
+//Validacion del tocken e inicio de sesion
   @override
   void initState() {
     super.initState();
@@ -26,7 +29,8 @@ class _EdadGeneroPageScreenState extends State<EdadGeneroPageScreen> {
     } else {
       try {
         Map<String, dynamic> jwtDecodedToken = JwtDecoder.decode(widget.token);
-        print("Token decodificado: $jwtDecodedToken"); // Depuración del token decodificado
+        print(
+            "Token decodificado: $jwtDecodedToken"); // Depuración del token decodificado
         email = jwtDecodedToken['email'];
       } catch (e) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -37,10 +41,27 @@ class _EdadGeneroPageScreenState extends State<EdadGeneroPageScreen> {
     }
   }
 
+  //funcion back para actualizar datos del usuario por edad, genero y nombre
+  Future<void> actualizarUsuario(String nombre, int edad, String genero) async {
+    final url = Uri.parse("http://localhost:4000/updateNAG");
 
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(
+          {"email": email, "nombre": nombre, "edad": edad, "genero": genero}),
+    );
+
+    if (response.statusCode == 200) {
+      print("Datos actualizados correctamente");
+    } else {
+      print("Error al actualizar: ${response.body}");
+    }
+  }
 
   String? selectedGender;
   final TextEditingController ageController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
 
   final List<String> genderOptions = ['Masculino', 'Femenino', 'Otro'];
 
@@ -50,7 +71,8 @@ class _EdadGeneroPageScreenState extends State<EdadGeneroPageScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sobre ti',
+        title: Text(
+          'Sobre ti',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -86,6 +108,33 @@ class _EdadGeneroPageScreenState extends State<EdadGeneroPageScreen> {
               Text(
                 "Cuéntanos un poco de ti...",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
+              ),
+              SizedBox(height: 30),
+              Text(
+                "¿Cuál es tu nombre?",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.blue[50],
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.grey),
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: TextFormField(
+                  controller: nameController,
+                  decoration: InputDecoration(
+                    hintText: "Ingresa tu nombre",
+                    border: InputBorder.none,
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Por favor ingresa tu nombre';
+                    }
+                    return null;
+                  },
+                ),
               ),
               SizedBox(height: 30),
               Text(
@@ -156,8 +205,11 @@ class _EdadGeneroPageScreenState extends State<EdadGeneroPageScreen> {
                   onPressed: () {
                     // Validamos el formulario antes de continuar
                     if (_formKey.currentState?.validate() ?? false) {
-                      // Si el formulario es válido, navegamos
-                      Navigator.pushNamed(context, '/localidadOcupacion');
+                      // Si el formulario es válido, navegamos y actualizamos los datos en el back
+                      actualizarUsuario(nameController.text,
+                          int.parse(ageController.text), selectedGender ?? "");
+                      Navigator.pushNamed(context, '/localidadOcupacion',
+                          arguments: email);
                     }
                   },
                   child: Text("Siguiente"),

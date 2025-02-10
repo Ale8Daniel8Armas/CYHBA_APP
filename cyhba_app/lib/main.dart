@@ -54,7 +54,7 @@ class _MyAppState extends State<MyApp> {
       routes: {
         '/login': (context) => LoginPage(),
         '/registration': (context) => RegisterPage(),
-        '/edadGenero': (context) => EdadGeneroPageScreen(token:_getToken()),
+        '/edadGenero': (context) => EdadGeneroPageScreen(token: _getToken()),
         '/localidadOcupacion': (context) => LocalidadOcupacionPageScreen(),
         '/saludHistorica': (context) => saludHistoricaPageScreen(),
         '/estadoSaludUno': (context) => EstadoSaludOneScreen(),
@@ -75,7 +75,9 @@ class _MyAppState extends State<MyApp> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return CircularProgressIndicator();
-          } else if (snapshot.hasError || snapshot.data == null || JwtDecoder.isExpired(snapshot.data!)) {
+          } else if (snapshot.hasError ||
+              snapshot.data == null ||
+              JwtDecoder.isExpired(snapshot.data!)) {
             return LoginPage();
           } else {
             WidgetsBinding.instance.addPostFrameCallback((_) {

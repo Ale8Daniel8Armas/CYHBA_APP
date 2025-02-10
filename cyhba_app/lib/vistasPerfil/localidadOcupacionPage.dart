@@ -1,16 +1,59 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class LocalidadOcupacionPageScreen extends StatefulWidget {
   @override
-  _LocalidadOcupacionPageScreenState createState() => _LocalidadOcupacionPageScreenState();
+  _LocalidadOcupacionPageScreenState createState() =>
+      _LocalidadOcupacionPageScreenState();
 }
 
-class _LocalidadOcupacionPageScreenState extends State<LocalidadOcupacionPageScreen> {
+class _LocalidadOcupacionPageScreenState
+    extends State<LocalidadOcupacionPageScreen> {
+  late String email;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final arguments = ModalRoute.of(context)?.settings.arguments;
+    if (arguments != null) {
+      email = arguments as String;
+    } else {
+      // Redirigir al login si no hay email
+      Navigator.pushReplacementNamed(context, '/login');
+    }
+  }
+
+  //funcion back para actualizar datos del usuario por localidad y ocupacion
+  Future<void> actualizarUsuarioLocalidadOcupacion(
+      String localidad, String ocupacion) async {
+    final url = Uri.parse("http://localhost:4000/updateLO");
+
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode(
+          {"email": email, "localidad": localidad, "ocupacion": ocupacion}),
+    );
+
+    if (response.statusCode == 200) {
+      print("Datos de localidad y ocupación actualizados correctamente");
+    } else {
+      print("Error al actualizar: ${response.body}");
+    }
+  }
+
+  //variables
   String? selectedRegion;
   String? selectedOcupation;
 
   final List<String> regionOptions = ['Rural', 'Urbano', 'Sub-Urbano'];
-  final List<String> ocupationOptions = ['Empleado', 'Desempleado', 'Estudiante', 'Jubilado'];
+  final List<String> ocupationOptions = [
+    'Empleado',
+    'Desempleado',
+    'Estudiante',
+    'Jubilado'
+  ];
 
   final _formKey = GlobalKey<FormState>();
 
@@ -18,7 +61,8 @@ class _LocalidadOcupacionPageScreenState extends State<LocalidadOcupacionPageScr
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Sobre ti',
+        title: Text(
+          'Sobre ti',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -63,23 +107,23 @@ class _LocalidadOcupacionPageScreenState extends State<LocalidadOcupacionPageScr
                   border: Border.all(color: Colors.grey),
                 ),
                 padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: DropdownButton<String>(
-                    value: selectedRegion,
-                    isExpanded: true,
-                    hint: Text("Tipo de localidad:"),
-                    underline: SizedBox(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedRegion = newValue;
-                      });
-                    },
-                    items: regionOptions.map((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                  ),
+                child: DropdownButton<String>(
+                  value: selectedRegion,
+                  isExpanded: true,
+                  hint: Text("Tipo de localidad:"),
+                  underline: SizedBox(),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedRegion = newValue;
+                    });
+                  },
+                  items: regionOptions.map((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
               ),
               SizedBox(height: 30),
               Text(
@@ -119,6 +163,8 @@ class _LocalidadOcupacionPageScreenState extends State<LocalidadOcupacionPageScr
                     // Validamos el formulario antes de continuar
                     if (_formKey.currentState?.validate() ?? false) {
                       // Si el formulario es válido, navegamos
+                      actualizarUsuarioLocalidadOcupacion(
+                          selectedRegion ?? "", selectedOcupation ?? "");
                       Navigator.pushNamed(context, '/saludHistorica');
                     }
                   },

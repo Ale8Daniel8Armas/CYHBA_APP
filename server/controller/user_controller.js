@@ -15,7 +15,7 @@ exports.register = async(req, res, next) => {
             message: error.message
         });
     }
-}
+};
 
 exports.login = async (req, res) => {
   try {
@@ -41,4 +41,33 @@ exports.login = async (req, res) => {
   }
 };
 
+      exports.updateUserDataByAgeNameGender = async (req, res) => {
+        try {
+            const { email, nombre, edad, genero } = req.body;
+            const updatedUser = await userService.updateUserDataByAgeNameGender(email, nombre, edad, genero);
+    
+            res.status(200).json({
+                status: true,
+                message: "Datos actualizados correctamente",
+                user: { email: updatedUser.email, nombre: updatedUser.nombre, edad: updatedUser.edad, genero: updatedUser.genero }
+            });
+        } catch (error) {
+            res.status(400).json({ status: false, message: error.message });
+        };
+    };
+
+        exports.updateUserDataByLocalOcupation = async (req, res) => {
+            try {
+                const { email, localidad, ocupacion } = req.body;
+                const updatedUser = await userService.updateUserDataByLocalOcupation(email, localidad, ocupacion);
+        
+                res.status(200).json({
+                    status: true,
+                    message: "Datos ocupacion y localidad actualizados",
+                    user: { email: updatedUser.email, localidad: updatedUser.localidad, ocupacion: updatedUser.ocupacion }
+                });
+            } catch (error) {
+                res.status(400).json({ status: false, message: error.message });
+            }
+};
 
