@@ -15,7 +15,6 @@ router.put("/updateDietWater", UserController.updateUserDataByDietAndWater);
 router.put("/updateStress", UserController.updateUserDataByEstresLevel);
 router.put("/updateHeart", UserController.updateUserDataByHeart);
 router.put("/updateBeer", UserController.updateUserDataByBeer);
-router.put("/updateBeer", UserController.updateUserDataByBeer);
 router.put("/updateST", UserController.updateUserDataST);
 router.put("/updateU", UserController.updateUserDataByFrecuencia);
 router.put("/updateSmoke", UserController.updateUserSmoke);
@@ -26,6 +25,10 @@ router.get(
 );
 router.get("/getConsumo/:email", UserController.getConsumoPorDiasByEmail);
 router.get("/getFrecuencia/:email", UserController.getFrecuenciaSemanalByEmail);
-router.put("/calcularConsumo", UserContoller.updateSTU);
+router.put("/calcularConsumo", UserController.updateSTU);
+router.get(
+  "/getConsumoAlcohol/:email",
+  UserController.getConsumoAlcoholByEmail
+);
 
 module.exports = router;

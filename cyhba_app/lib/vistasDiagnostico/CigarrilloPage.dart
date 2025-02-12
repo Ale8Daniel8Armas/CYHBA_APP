@@ -34,7 +34,7 @@ class _CigarrilloScreenState extends State<CigarrilloScreen> {
     }
   }
 
-  //funcion back para actualizar datos de la frecuencia
+  //funcion back para actualizar datos en el cigarrillo
   Future<void> actualizarUsuarioSmoking(String cigarrillo) async {
     final url = Uri.parse("http://localhost:4000/updateSmoke");
 
@@ -51,6 +51,73 @@ class _CigarrilloScreenState extends State<CigarrilloScreen> {
       print("Datos actualizados correctamente");
     } else {
       print("Error al actualizar: ${response.body}");
+    }
+  }
+
+  //llamada de los getters de calculo
+  Future<double> fetchUnidadesAlcohol(String email) async {
+    final url = Uri.parse("http://localhost:4000/getUnidadesAlcohol/$email");
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['unidadesAlcohol'];
+    } else {
+      throw Exception("Error obteniendo unidades de alcohol");
+    }
+  }
+
+  Future<int> fetchConsumoPorDias(String email) async {
+    final url = Uri.parse("http://localhost:4000/getConsumo/$email");
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['consumoPorDias'];
+    } else {
+      throw Exception("Error obteniendo consumo por días");
+    }
+  }
+
+  Future<int> fetchFrecuenciaSemanal(String email) async {
+    final url = Uri.parse("http://localhost:4000/getFrecuencia/$email");
+    final response = await http.get(url);
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['frecuenciaSemanal'];
+    } else {
+      throw Exception("Error obteniendo frecuencia semanal");
+    }
+  }
+
+//funcion de calculo de la frecuencia de consumo del alcohol
+  Future<void> calcularSTU(String email) async {
+    try {
+      double unidadesAlcohol = await fetchUnidadesAlcohol(email);
+      int consumoPorDias = await fetchConsumoPorDias(email);
+      int frecuenciaSemanal = await fetchFrecuenciaSemanal(email);
+
+      final url = Uri.parse("http://localhost:4000/calcularConsumo");
+
+      final response = await http.put(
+        url,
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "email": email,
+          "unidadesAlcohol": unidadesAlcohol,
+          "consumoPorDias": consumoPorDias,
+          "frecuenciaSemanal": frecuenciaSemanal,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        print("STU actualizado correctamente");
+      } else {
+        print("Error al actualizar STU: ${response.body}");
+      }
+    } catch (error) {
+      print("Error en la solicitud: $error");
     }
   }
 
@@ -136,6 +203,7 @@ class _CigarrilloScreenState extends State<CigarrilloScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     actualizarUsuarioSmoking(selectedSmoke ?? '');
+                    calcularSTU(email);
                     Navigator.pushNamed(context, '/resultado',
                         arguments: email);
                   },

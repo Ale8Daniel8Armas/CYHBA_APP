@@ -427,7 +427,7 @@ exports.updateUserSmoke = async (req, res) => {
     const { email, cigarrillo } = req.body;
     const updatedUser = await userService.updateUserDataBySmoking(
       email,
-      cigarillo
+      cigarrillo
     );
 
     res.status(200).json({
@@ -450,7 +450,12 @@ exports.updateSTU = async (req, res) => {
       req.body;
 
     // Validación de datos
-    if (!email || !unidadesAlcohol || !consumoPorDias || !frecuenciaSemanal) {
+    if (
+      !email ||
+      unidadesAlcohol == null ||
+      consumoPorDias == null ||
+      frecuenciaSemanal == null
+    ) {
       return res.status(400).json({
         status: false,
         message: "Faltan datos para el calculo del STU",
@@ -584,6 +589,27 @@ exports.getFrecuenciaSemanalByEmail = async (req, res) => {
     }
 
     res.status(200).json({ frecuenciaSemanal: user.frecuenciaSemanal });
+  } catch (error) {
+    res.status(500).json({
+      status: false,
+      message: "Error en el servidor",
+      error: error.message,
+    });
+  }
+};
+
+exports.getConsumoAlcoholByEmail = async (req, res) => {
+  try {
+    const { email } = req.params;
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ status: false, message: "Usuario no encontrado" });
+    }
+
+    res.status(200).json({ consumoAlcohol: user.consumoAlcohol });
   } catch (error) {
     res.status(500).json({
       status: false,

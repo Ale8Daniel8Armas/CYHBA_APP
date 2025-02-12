@@ -66,16 +66,6 @@ class _CantidadConsumoScreenState extends State<CantidadConsumoScreen> {
     }
   }
 
-  void updateTotalDrinks() {
-    setState(() {
-      totalDrinks = numberOfBeers +
-          numberOfVines +
-          numberOfVodkas +
-          numberOfChampans +
-          numberOfBrandys;
-    });
-  }
-
   void toggleBeerSelection(String beer) {
     setState(() {
       if (selectedBeers.contains(beer)) {
@@ -191,6 +181,17 @@ class _CantidadConsumoScreenState extends State<CantidadConsumoScreen> {
     }
 
     return totalUnits;
+  }
+
+  int updateTotalDrinks() {
+    setState(() {
+      totalDrinks = numberOfBeers +
+          numberOfVines +
+          numberOfVodkas +
+          numberOfChampans +
+          numberOfBrandys;
+    });
+    return totalDrinks;
   }
 
   @override
@@ -494,7 +495,7 @@ class _CantidadConsumoScreenState extends State<CantidadConsumoScreen> {
                       canProceed3 &&
                       canProceed4 &&
                       canProceed5) {
-                    actualizarST(calculateTotalUnits(), totalDrinks);
+                    actualizarST(calculateTotalUnits(), updateTotalDrinks());
                     Navigator.pushNamed(context, '/frecuencia',
                         arguments: email);
                   } else {
