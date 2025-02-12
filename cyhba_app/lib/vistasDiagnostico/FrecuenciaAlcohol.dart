@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class FrecuenciaScreen extends StatefulWidget {
   @override
@@ -7,15 +9,54 @@ class FrecuenciaScreen extends StatefulWidget {
 
 class _FrecuenciaScreenState extends State<FrecuenciaScreen> {
   int frecuencia = 0;
+  late String email;
+  bool _initialized = false; // Para evitar múltiples asignaciones
 
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null && arguments is String) {
+        setState(() {
+          email = arguments;
+          _initialized = true; // Evita asignar varias veces
+        });
+      } else {
+        // Redirigir si no hay email
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  //funcion back para actualizar datos de la frecuencia
+  Future<void> actualizarUsuarioFrecuencia(int frecuenciaSemanal) async {
+    final url = Uri.parse("http://localhost:4000/updateU");
+
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "email": email,
+        "frecuenciaSemanal": frecuenciaSemanal,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("Datos actualizados correctamente");
+    } else {
+      print("Error al actualizar: ${response.body}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Estado del corazón',
+          'Frecuencia de Alcohol',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -86,7 +127,8 @@ class _FrecuenciaScreenState extends State<FrecuenciaScreen> {
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/tabaco');
+                    actualizarUsuarioFrecuencia(frecuencia);
+                    Navigator.pushNamed(context, '/tabaco', arguments: email);
                   },
                   child: Text("Siguiente"),
                   style: ElevatedButton.styleFrom(

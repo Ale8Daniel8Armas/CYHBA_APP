@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class NivelDietaScreen extends StatefulWidget {
   @override
@@ -6,12 +8,54 @@ class NivelDietaScreen extends StatefulWidget {
 }
 
 class _NivelDietaScreenState extends State<NivelDietaScreen> {
+  late String email;
+  bool _initialized = false; // Para evitar múltiples asignaciones
+
   String? selectedDiet;
   double waterIntake = 3.0;
 
   final List<String> dietOptions = ['Saludable', 'Regular', 'No Saludable'];
 
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null && arguments is String) {
+        setState(() {
+          email = arguments;
+          _initialized = true; // Evita asignar varias veces
+        });
+      } else {
+        // Redirigir si no hay email
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  //funcion back para actualizar datos del nivel de dieta y consumo de agua
+  Future<void> actualizarUsuarioDietaAgua(
+      String nivelDieta, double consumoAgua) async {
+    final url = Uri.parse("http://localhost:4000/updateDietWater");
+
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "email": email,
+        "nivelDieta": nivelDieta,
+        "consumoAgua": consumoAgua,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("Datos actualizados correctamente");
+    } else {
+      print("Error al actualizar: ${response.body}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +147,8 @@ class _NivelDietaScreenState extends State<NivelDietaScreen> {
                     min: 1.0,
                     max: 5.0,
                     divisions: 40, // Incrementos de 0.1
-                    label: waterIntake.toStringAsFixed(1), // Etiqueta con decimales
+                    label: waterIntake
+                        .toStringAsFixed(1), // Etiqueta con decimales
                     onChanged: (double value) {
                       setState(() {
                         waterIntake = value;
@@ -121,7 +166,9 @@ class _NivelDietaScreenState extends State<NivelDietaScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     //print("Ingesta diaria seleccionada: $waterIntake litros");
-                    Navigator.pushNamed(context, '/nivelEstres');
+                    actualizarUsuarioDietaAgua(selectedDiet ?? "", waterIntake);
+                    Navigator.pushNamed(context, '/nivelEstres',
+                        arguments: email);
                   },
                   child: Text("Siguiente"),
                   style: ElevatedButton.styleFrom(

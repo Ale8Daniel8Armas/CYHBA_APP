@@ -1,17 +1,55 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class EstadoSaludTwoScreen extends StatefulWidget {
   @override
-  _EstadoSaludTwoScreenState createState() =>
-      _EstadoSaludTwoScreenState();
+  _EstadoSaludTwoScreenState createState() => _EstadoSaludTwoScreenState();
 }
 
-class _EstadoSaludTwoScreenState
-    extends State<EstadoSaludTwoScreen> {
+class _EstadoSaludTwoScreenState extends State<EstadoSaludTwoScreen> {
+  late String email;
+  bool _initialized = false; // Para evitar múltiples asignaciones
+
+  // Controladores de los campos de texto
+
   final TextEditingController presionController = TextEditingController();
-  final TextEditingController colesterolController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null && arguments is String) {
+        setState(() {
+          email = arguments;
+          _initialized = true; // Evita asignar varias veces
+        });
+      } else {
+        // Redirigir si no hay email
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  //funcion back para actualizar datos del usuario por presion y colesterol
+  Future<void> actualizarUsuarioPC(double presion) async {
+    final url = Uri.parse("http://localhost:4000/updatePC");
+
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"email": email, "presion": presion}),
+    );
+
+    if (response.statusCode == 200) {
+      print("Datos actualizados correctamente para la presion");
+    } else {
+      print("Error al actualizar: ${response.body}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,11 +133,14 @@ class _EstadoSaludTwoScreenState
                 child: ElevatedButton(
                   onPressed: () {
                     // if (_formKey.currentState?.validate() ?? false) {
-                    Navigator.pushNamed(context, '/habitoEjercicios');
+                    actualizarUsuarioPC(
+                      double.parse(presionController.text),
+                    );
+                    Navigator.pushNamed(context, '/habitoEjercicios',
+                        arguments: email);
                     // }
                   },
                   child: Text("Siguiente"),
-
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[300],
                     foregroundColor: Colors.black,

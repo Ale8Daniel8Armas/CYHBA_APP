@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class NivelEstresScreen extends StatefulWidget {
   @override
@@ -6,12 +8,65 @@ class NivelEstresScreen extends StatefulWidget {
 }
 
 class _NivelEstresScreenState extends State<NivelEstresScreen> {
+  late String email;
+  bool _initialized = false; // Para evitar múltiples asignaciones
+
   String? selectedEstresLevel;
   double sleepHours = 7.0;
 
-  final List<String> levelEstresOptions = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10'];
+  final List<String> levelEstresOptions = [
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+    '10'
+  ];
 
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null && arguments is String) {
+        setState(() {
+          email = arguments;
+          _initialized = true; // Evita asignar varias veces
+        });
+      } else {
+        // Redirigir si no hay email
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  //funcion back para actualizar datos del nivel de estres y horas de sueño
+  Future<void> actualizarUsuarioPorEstres(
+      int estres, double horasSuenio) async {
+    final url = Uri.parse("http://localhost:4000/updateStress");
+
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "email": email,
+        "estres": estres,
+        "horasSuenio": horasSuenio,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("Datos actualizados correctamente");
+    } else {
+      print("Error al actualizar: ${response.body}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,7 +158,8 @@ class _NivelEstresScreenState extends State<NivelEstresScreen> {
                     min: 4.0,
                     max: 10.0,
                     divisions: 40, // Incrementos de 0.1
-                    label: sleepHours.toStringAsFixed(1), // Etiqueta con decimales
+                    label:
+                        sleepHours.toStringAsFixed(1), // Etiqueta con decimales
                     onChanged: (double value) {
                       setState(() {
                         sleepHours = value;
@@ -121,7 +177,11 @@ class _NivelEstresScreenState extends State<NivelEstresScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     //print("Ingesta diaria seleccionada: $waterIntake litros");
-                    Navigator.pushNamed(context, '/estadoCorazon');
+                    actualizarUsuarioPorEstres(
+                        int.tryParse(selectedEstresLevel ?? "") ?? 1,
+                        sleepHours);
+                    Navigator.pushNamed(context, '/estadoCorazon',
+                        arguments: email);
                   },
                   child: Text("Siguiente"),
                   style: ElevatedButton.styleFrom(

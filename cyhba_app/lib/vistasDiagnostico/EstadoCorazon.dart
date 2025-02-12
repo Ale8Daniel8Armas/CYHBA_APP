@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class EstadoCorazonScreen extends StatefulWidget {
   @override
@@ -6,12 +8,54 @@ class EstadoCorazonScreen extends StatefulWidget {
 }
 
 class _EstadoCorazonScreenState extends State<EstadoCorazonScreen> {
+  late String email;
+  bool _initialized = false; // Para evitar múltiples asignaciones
+
   String? selectedAttack;
   int heartRate = 80;
 
   final List<String> attackOptions = ['Si', 'No'];
 
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null && arguments is String) {
+        setState(() {
+          email = arguments;
+          _initialized = true; // Evita asignar varias veces
+        });
+      } else {
+        // Redirigir si no hay email
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  //funcion back para actualizar datos del estado del corazon
+  Future<void> actualizarUsuarioPorCorazon(
+      String ataqueCardiaco, int ratioCorazon) async {
+    final url = Uri.parse("http://localhost:4000/updateHeart");
+
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "email": email,
+        "ataqueCardiaco": ataqueCardiaco,
+        "ratioCorazon": ratioCorazon,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("Datos actualizados correctamente");
+    } else {
+      print("Error al actualizar: ${response.body}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +165,10 @@ class _EstadoCorazonScreenState extends State<EstadoCorazonScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     //print("Ingesta diaria seleccionada: $waterIntake litros");
-                    Navigator.pushNamed(context, '/tiposBebida');
+                    actualizarUsuarioPorCorazon(
+                        selectedAttack ?? "", heartRate);
+                    Navigator.pushNamed(context, '/tiposBebida',
+                        arguments: email);
                   },
                   child: Text("Siguiente"),
                   style: ElevatedButton.styleFrom(

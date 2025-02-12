@@ -165,7 +165,8 @@ class _LocalidadOcupacionPageScreenState
                       // Si el formulario es válido, navegamos
                       actualizarUsuarioLocalidadOcupacion(
                           selectedRegion ?? "", selectedOcupation ?? "");
-                      Navigator.pushNamed(context, '/saludHistorica');
+                      Navigator.pushNamed(context, '/saludHistorica',
+                          arguments: email);
                     }
                   },
                   child: Text("Siguiente"),

@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class BeverageSelectionPage extends StatefulWidget {
   @override
   _BeverageSelectionPageState createState() => _BeverageSelectionPageState();
 }
 
-
 class _BeverageSelectionPageState extends State<BeverageSelectionPage> {
+  late String email;
+  bool _initialized = false; // Para evitar múltiples asignaciones
+
   String? selectedBeverage;
 
   final beverages = [
@@ -17,6 +21,43 @@ class _BeverageSelectionPageState extends State<BeverageSelectionPage> {
     {"name": "Aguardiente", "image": "assets/brandy.png"},
     {"name": "Agua (no tomo)", "image": "assets/agua.jpg"},
   ];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null && arguments is String) {
+        setState(() {
+          email = arguments;
+          _initialized = true; // Evita asignar varias veces
+        });
+      } else {
+        // Redirigir si no hay email
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  //funcion back para actualizar el tipo de bebida
+  Future<void> actualizarUsuarioBebida(String tipoBebida) async {
+    final url = Uri.parse("http://localhost:4000/updateBeer");
+
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "email": email,
+        "tipoBebida": tipoBebida,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("Datos actualizados correctamente");
+    } else {
+      print("Error al actualizar: ${response.body}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -124,7 +165,9 @@ class _BeverageSelectionPageState extends State<BeverageSelectionPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text("Seleccionaste: $selectedBeverage")),
                   );
-                  Navigator.pushNamed(context, '/cantidadAlcohol');
+                  actualizarUsuarioBebida(selectedBeverage ?? "");
+                  Navigator.pushNamed(context, '/cantidadAlcohol',
+                      arguments: email);
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
@@ -134,7 +177,8 @@ class _BeverageSelectionPageState extends State<BeverageSelectionPage> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.grey[800],
-                padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 40, vertical: 15),
               ),
               child: const Text(
                 "Siguiente",

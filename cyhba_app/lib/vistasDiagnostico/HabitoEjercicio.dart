@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class HabitoEjercicioScreen extends StatefulWidget {
   @override
-  _HabitoEjercicioScreenState createState() =>
-      _HabitoEjercicioScreenState();
+  _HabitoEjercicioScreenState createState() => _HabitoEjercicioScreenState();
 }
 
 class _HabitoEjercicioScreenState extends State<HabitoEjercicioScreen> {
+  late String email;
+  bool _initialized = false; // Para evitar múltiples asignaciones
+
   String? selectedActivity;
   String? selectedPhysical;
 
@@ -14,6 +18,45 @@ class _HabitoEjercicioScreenState extends State<HabitoEjercicioScreen> {
   final List<String> physicalOptions = ['Moderado', 'Alto', 'Bajo'];
 
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null && arguments is String) {
+        setState(() {
+          email = arguments;
+          _initialized = true; // Evita asignar varias veces
+        });
+      } else {
+        // Redirigir si no hay email
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  //funcion para actualizar el nivel de ejercicio y la actividad fisica
+  Future<void> actualizarUsuarioHabitos(
+      String nivelEjercicio, String actividadFisica) async {
+    final url = Uri.parse("http://localhost:4000/updateExeLevel");
+
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "email": email,
+        "nivelEjercicio": nivelEjercicio,
+        "actividadFisica": actividadFisica
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("Datos actualizados correctamente para la presion");
+    } else {
+      print("Error al actualizar: ${response.body}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -127,7 +170,12 @@ class _HabitoEjercicioScreenState extends State<HabitoEjercicioScreen> {
                 child: ElevatedButton(
                   onPressed: () {
                     // if (_formKey.currentState?.validate() ?? false) {
-                    Navigator.pushNamed(context, '/nivelDieta');
+                    actualizarUsuarioHabitos(
+                      selectedActivity ?? "",
+                      selectedPhysical ?? "",
+                    );
+                    Navigator.pushNamed(context, '/nivelDieta',
+                        arguments: email);
                     // }
                   },
                   child: Text("Siguiente"),

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -8,6 +10,53 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  late String email;
+  bool _initialized = false;
+  String userName = "Cargando..."; // Variable inicializada correctamente
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null && arguments is String) {
+        setState(() {
+          email = arguments;
+          _initialized = true;
+          _fetchUserName(email); // Llamar a la función para obtener el nombre
+        });
+      } else {
+        // Redirigir al login si no hay email
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  // Función para obtener el nombre de usuario
+  Future<void> _fetchUserName(String email) async {
+    try {
+      final response = await http.get(
+        Uri.parse('http://localhost:4000/getName/$email'),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          userName = data['nombre'] ?? "Sin Nombre";
+        });
+      } else {
+        setState(() {
+          userName = "Usuario no encontrado";
+        });
+      }
+    } catch (e) {
+      print("Error al obtener el nombre: $e");
+      setState(() {
+        userName = "Error al cargar";
+      });
+    }
+  }
+
   File? _image;
 
   Future<void> _pickImage() async {
@@ -26,7 +75,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Row(
-          mainAxisSize: MainAxisSize.min, // Ajusta el tamaño del Row al contenido
+          mainAxisSize:
+              MainAxisSize.min, // Ajusta el tamaño del Row al contenido
           children: [
             Text(
               'CYHBA',
@@ -54,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Color(0xFF2C3E50),
         centerTitle: true,
       ),
-      body: Center( // Centra el contenido
+      body: Center(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -74,10 +124,12 @@ class _HomeScreenState extends State<HomeScreen> {
                           : null,
                       backgroundColor: Colors.transparent,
                       child: _image == null
-                          ? Icon(Icons.person, size: 100, color: Colors.grey) // Icono de persona
+                          ? Icon(Icons.person,
+                              size: 100, color: Colors.grey) // Icono de persona
                           : null,
                     ),
-                    if (_image == null) // Si no hay imagen, agregar icono de cámara
+                    if (_image ==
+                        null) // Si no hay imagen, agregar icono de cámara
                       Positioned(
                         bottom: 0,
                         right: 0,
@@ -93,7 +145,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: 20),
               // Nombre con estilo
               Text(
-                'Jane Doe',
+                'Bienvenido $userName',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.bold,
@@ -104,14 +156,16 @@ class _HomeScreenState extends State<HomeScreen> {
               // Botón estilizado
               ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/estadoSaludUno');
+                  Navigator.pushNamed(context, '/estadoSaludUno',
+                      arguments: email);
                 },
                 child: Text("Iniciar Diagnóstico"),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.lightBlueAccent, // Color de fondo
                   foregroundColor: Colors.white, // Color del texto
                   padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  textStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  textStyle:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),

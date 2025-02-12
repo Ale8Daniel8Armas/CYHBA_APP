@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class CigarrilloScreen extends StatefulWidget {
   @override
@@ -6,11 +8,51 @@ class CigarrilloScreen extends StatefulWidget {
 }
 
 class _CigarrilloScreenState extends State<CigarrilloScreen> {
+  late String email;
+  bool _initialized = false; // Para evitar múltiples asignaciones
+
   String? selectedSmoke;
 
-  final List<String> smoking = ['Sí', 'No'];
+  final List<String> smoking = ['Si', 'No'];
 
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null && arguments is String) {
+        setState(() {
+          email = arguments;
+          _initialized = true; // Evita asignar varias veces
+        });
+      } else {
+        // Redirigir si no hay email
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  //funcion back para actualizar datos de la frecuencia
+  Future<void> actualizarUsuarioSmoking(String cigarrillo) async {
+    final url = Uri.parse("http://localhost:4000/updateSmoke");
+
+    final response = await http.put(
+      url,
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "email": email,
+        "cigarrillo": cigarrillo,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      print("Datos actualizados correctamente");
+    } else {
+      print("Error al actualizar: ${response.body}");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +135,9 @@ class _CigarrilloScreenState extends State<CigarrilloScreen> {
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pushNamed(context, '/resultado');
+                    actualizarUsuarioSmoking(selectedSmoke ?? '');
+                    Navigator.pushNamed(context, '/resultado',
+                        arguments: email);
                   },
                   child: Text("Siguiente"),
                   style: ElevatedButton.styleFrom(

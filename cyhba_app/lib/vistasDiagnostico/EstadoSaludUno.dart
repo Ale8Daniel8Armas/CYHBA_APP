@@ -1,24 +1,95 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class EstadoSaludOneScreen extends StatefulWidget {
   @override
-  _EstadoSaludOneScreenState createState() =>
-      _EstadoSaludOneScreenState();
+  _EstadoSaludOneScreenState createState() => _EstadoSaludOneScreenState();
 }
 
-class _EstadoSaludOneScreenState
-    extends State<EstadoSaludOneScreen> {
+class _EstadoSaludOneScreenState extends State<EstadoSaludOneScreen> {
+  late String email;
+  bool _initialized = false; // Para evitar múltiples asignaciones
+
+  // Controladores de los campos de texto
   final TextEditingController pesoController = TextEditingController();
   final TextEditingController alturaController = TextEditingController();
 
+  // Para manejar la validación del formulario
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      final arguments = ModalRoute.of(context)?.settings.arguments;
+      if (arguments != null && arguments is String) {
+        setState(() {
+          email = arguments;
+          _initialized = true; // Evita asignar varias veces
+        });
+      } else {
+        // Redirigir si no hay email
+        Navigator.pushReplacementNamed(context, '/login');
+      }
+    }
+  }
+
+  // Función para actualizar el BMI en el backend
+  Future<void> actualizarBMI() async {
+    final url = 'http://localhost:4000/updatePA';
+    final headers = {
+      'Content-Type': 'application/json',
+    };
+
+    final body = json.encode({
+      'email': email,
+      'peso': double.tryParse(pesoController.text),
+      'altura': double.tryParse(alturaController.text),
+    });
+
+    try {
+      final response =
+          await http.put(Uri.parse(url), headers: headers, body: body);
+
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        if (data['status']) {
+          // Si la actualización fue exitosa, muestra un mensaje
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('BMI actualizado correctamente!')),
+          );
+          // Aquí puedes navegar a otra pantalla si es necesario
+          Navigator.pushNamed(context, '/estadoSaludDos', arguments: email);
+        } else {
+          // Si hubo un error, muestra un mensaje
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content:
+                    Text('Error al actualizar el BMI: ${data['message']}')),
+          );
+        }
+      } else {
+        // Si el servidor no responde correctamente
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al contactar con el servidor')),
+        );
+      }
+    } catch (error) {
+      // Si hubo un error de red o cualquier otro error
+      print(error);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al realizar la solicitud')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Status Salud',
+          'Estado de Salud',
           style: TextStyle(
             fontSize: 24,
             fontWeight: FontWeight.bold,
@@ -38,7 +109,7 @@ class _EstadoSaludOneScreenState
             child: CircleAvatar(
               backgroundImage: AssetImage('assets/onlyheart.jpg'),
             ),
-          )
+          ),
         ],
         backgroundColor: Color(0xFFF05E54),
         centerTitle: true,
@@ -78,16 +149,12 @@ class _EstadoSaludOneScreenState
                     hintText: "Ingresa tu peso [kg]:",
                     border: InputBorder.none,
                   ),
-                  /*validator: (value) {
+                  validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Por favor ingresa tu edad';
-                    }
-                    int? age = int.tryParse(value);
-                    if (age == null || age < 18 || age > 80) {
-                      return 'Edad debe ser un número entre 18 y 80';
+                      return 'Por favor ingresa un peso válido';
                     }
                     return null;
-                  },*/
+                  },
                 ),
               ),
               SizedBox(height: 30),
@@ -110,25 +177,22 @@ class _EstadoSaludOneScreenState
                     hintText: "Ingresa tu altura [m]:",
                     border: InputBorder.none,
                   ),
-                  /*validator: (value) {
+                  validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Por favor ingresa tu edad';
-                    }
-                    int? age = int.tryParse(value);
-                    if (age == null || age < 18 || age > 80) {
-                      return 'Edad debe ser un número entre 18 y 80';
+                      return 'Por favor ingresa una altura válida';
                     }
                     return null;
-                  },*/
+                  },
                 ),
               ),
               Spacer(),
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                   // if (_formKey.currentState?.validate() ?? false) {
-                    Navigator.pushNamed(context, '/estadoSaludDos');
-                   // }
+                    if (_formKey.currentState?.validate() ?? false) {
+                      // Llamar al método para actualizar el BMI en el backend
+                      actualizarBMI();
+                    }
                   },
                   child: Text("Siguiente"),
                   style: ElevatedButton.styleFrom(

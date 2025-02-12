@@ -42,14 +42,20 @@ class _EdadGeneroPageScreenState extends State<EdadGeneroPageScreen> {
   }
 
   //funcion back para actualizar datos del usuario por edad, genero y nombre
-  Future<void> actualizarUsuario(String nombre, int edad, String genero) async {
+  Future<void> actualizarUsuario(
+      String nombre, int edad, String genero, bool isProfileComplete) async {
     final url = Uri.parse("http://localhost:4000/updateNAG");
 
     final response = await http.put(
       url,
       headers: {"Content-Type": "application/json"},
-      body: jsonEncode(
-          {"email": email, "nombre": nombre, "edad": edad, "genero": genero}),
+      body: jsonEncode({
+        "email": email,
+        "nombre": nombre,
+        "edad": edad,
+        "genero": genero,
+        "isProfileComplete": isProfileComplete
+      }),
     );
 
     if (response.statusCode == 200) {
@@ -205,9 +211,16 @@ class _EdadGeneroPageScreenState extends State<EdadGeneroPageScreen> {
                   onPressed: () {
                     // Validamos el formulario antes de continuar
                     if (_formKey.currentState?.validate() ?? false) {
+                      bool isProfileComplete = nameController.text.isNotEmpty &&
+                          ageController.text.isNotEmpty &&
+                          selectedGender != null;
                       // Si el formulario es válido, navegamos y actualizamos los datos en el back
-                      actualizarUsuario(nameController.text,
-                          int.parse(ageController.text), selectedGender ?? "");
+
+                      actualizarUsuario(
+                          nameController.text,
+                          int.parse(ageController.text),
+                          selectedGender ?? "",
+                          isProfileComplete);
                       Navigator.pushNamed(context, '/localidadOcupacion',
                           arguments: email);
                     }
