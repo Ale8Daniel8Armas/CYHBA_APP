@@ -17,6 +17,9 @@ class _ResultadosScreenState extends State<ResultadosScreen> {
   int consumoDias = 0;
   int frecuenciaNumeroDiasALaSemana = 0;
 
+  // Variable para almacenar la predicción del modelo
+  String? predictionResult;
+
   final _formKey = GlobalKey<FormState>();
 
   @override
@@ -31,6 +34,7 @@ class _ResultadosScreenState extends State<ResultadosScreen> {
         });
         // Llamar a las funciones para obtener los datos
         fetchData();
+        fetchPrediction(); // Llamamos la función para obtener la predicción
       } else {
         Navigator.pushReplacementNamed(context, '/login');
       }
@@ -53,6 +57,51 @@ class _ResultadosScreenState extends State<ResultadosScreen> {
       });
     } catch (e) {
       print("Error obteniendo datos: $e");
+    }
+  }
+
+  // Función para obtener la predicción desde el backend
+  Future<void> fetchPrediction() async {
+    try {
+      final response = await http.post(
+        Uri.parse("http://localhost:4000/predict"), // Ruta para la predicción
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({'email': email}),
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          // Verificamos si la respuesta contiene una lista de predicciones
+          if (data['prediction'] != null && data['prediction'].isNotEmpty) {
+            var highestProbabilityPrediction = data['prediction'][0];
+            double highestProbability =
+                highestProbabilityPrediction['probability'];
+            String disease = highestProbabilityPrediction['disease'];
+
+            // Verificamos si hay otras predicciones con la misma probabilidad
+            for (var prediction in data['prediction']) {
+              if (prediction['probability'] > highestProbability) {
+                highestProbability = prediction['probability'];
+                disease = prediction['disease'];
+              }
+            }
+
+            // Asignamos la enfermedad con la mayor probabilidad
+            predictionResult =
+                "$disease con ${highestProbability.toStringAsFixed(2)}% de probabilidad";
+          } else {
+            predictionResult = 'No se pudo obtener la predicción';
+          }
+        });
+      } else {
+        throw Exception("Error obteniendo la predicción");
+      }
+    } catch (e) {
+      print("Error obteniendo la predicción: $e");
+      setState(() {
+        predictionResult = 'Error en la predicción';
+      });
     }
   }
 
@@ -169,6 +218,18 @@ class _ResultadosScreenState extends State<ResultadosScreen> {
                 "Frecuencia semanal: $frecuenciaNumeroDiasALaSemana días",
                 style: TextStyle(fontSize: 16),
               ),
+
+              SizedBox(height: 20),
+
+              // Mostrar la predicción del modelo
+              if (predictionResult != null)
+                Text(
+                  "Predicción de riesgo de enfermedad cardíaca: $predictionResult",
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.red),
+                ),
 
               Spacer(),
 

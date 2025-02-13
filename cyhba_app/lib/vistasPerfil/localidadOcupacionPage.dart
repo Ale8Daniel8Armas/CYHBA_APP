@@ -47,7 +47,7 @@ class _LocalidadOcupacionPageScreenState
   String? selectedRegion;
   String? selectedOcupation;
 
-  final List<String> regionOptions = ['Rural', 'Urbano', 'Sub-Urbano'];
+  final List<String> regionOptions = ['Rural', 'Urbano', 'SubUrbano'];
   final List<String> ocupationOptions = [
     'Empleado',
     'Desempleado',

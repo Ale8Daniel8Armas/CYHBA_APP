@@ -60,7 +60,7 @@ class _saludHistoricaPageScreenState extends State<saludHistoricaPageScreen> {
   String? selectedObesidad;
 
   // Opciones para los menús desplegables
-  final List<String> opciones = ['Sí', 'No'];
+  final List<String> opciones = ['Si', 'No'];
 
   @override
   Widget build(BuildContext context) {

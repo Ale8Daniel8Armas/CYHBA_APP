@@ -105,7 +105,7 @@ class _HabitoEjercicioScreenState extends State<HabitoEjercicioScreen> {
               ),
               SizedBox(height: 30),
               Text(
-                "El nivel de ejercicio se considera como la actividad planificada para entrenar los músculos, como ir al gym o hacer yoga, tomando esto en cuenta, ¿Cuál es su nivel de ejercicio?",
+                "El nivel de ejercicio se considera como una actividad planificada ¿Cuál es su nivel de ejercicio?",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
@@ -136,7 +136,7 @@ class _HabitoEjercicioScreenState extends State<HabitoEjercicioScreen> {
               ),
               SizedBox(height: 30),
               Text(
-                "El nivel de actividad física es el ejercicio no planificado que se lo hace rutinariamente, como subir escaleras o caminar, por ello, ¿Cúal es su nivel de actividad física?",
+                "El nivel de actividad física se considera como una actividad no planificada ¿Cúal es su nivel de actividad física?",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),

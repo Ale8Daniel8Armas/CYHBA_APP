@@ -34,7 +34,7 @@ const userSchema = new Schema({
   localidad: {
     type: String,
     required: false,
-    enum: ["Rural", "Urbano", "Sub-Urbano"],
+    enum: ["Rural", "Urbano", "SubUrbano"],
   },
   ocupacion: {
     type: String,
@@ -44,22 +44,22 @@ const userSchema = new Schema({
   familiarEnfermo: {
     type: String,
     required: false,
-    enum: ["Sí", "No"],
+    enum: ["Si", "No"],
   },
   enfermedadCardiaca: {
     type: String,
     required: false,
-    enum: ["Sí", "No"],
+    enum: ["Si", "No"],
   },
   diabetes: {
     type: String,
     required: false,
-    enum: ["Sí", "No"],
+    enum: ["Si", "No"],
   },
   obesidad: {
     type: String,
     required: false,
-    enum: ["Sí", "No"],
+    enum: ["Si", "No"],
   },
   isProfileComplete: {
     type: Boolean,

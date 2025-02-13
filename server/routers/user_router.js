@@ -1,6 +1,10 @@
 const router = require("express").Router();
 const UserController = require("../controller/user_controller.js");
+const mlRoutes = require("../services/ml_services.js");
 
+//Ruta del modelo ML
+router.post("/predict", mlRoutes);
+//Ruta de pantallas
 router.post("/registro", UserController.register);
 router.post("/log", UserController.login);
 router.put("/updateNAG", UserController.updateUserDataByAgeNameGender);
