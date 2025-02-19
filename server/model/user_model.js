@@ -168,9 +168,14 @@ userSchema.pre("save", async function (next) {
 // Método para comparar la contraseña
 userSchema.methods.comparePassword = async function (userPassword) {
   try {
+    console.log("Comparing passwords:");
+    console.log("Input password:", userPassword);
+    console.log("Stored hash:", this.password);
     const isMatch = await bcrypt.compare(userPassword, this.password);
+    console.log("Password match:", isMatch);
     return isMatch;
   } catch (err) {
+    console.error("Error comparing passwords:", err);
     throw err;
   }
 };

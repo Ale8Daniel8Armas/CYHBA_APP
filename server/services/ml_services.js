@@ -25,7 +25,7 @@ router.post("/predict", async (req, res) => {
       user.toObject()
     );
 
-    console.log(preparedData); // Verifica que los campos Alcohol_Consumption y type_drink están ahí
+    console.log(preparedData); 
 
     // Hacer la predicción
     const prediction = await axios.post(ML_SERVICE_URL, preparedData);

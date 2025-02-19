@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class EdadGeneroPageScreen extends StatefulWidget {
   final token;
@@ -39,6 +40,12 @@ class _EdadGeneroPageScreenState extends State<EdadGeneroPageScreen> {
         });
       }
     }
+  }
+
+  Future<void> saveToken(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('token', token);
+    print("✅ Token guardado correctamente: $token");
   }
 
   //funcion back para actualizar datos del usuario por edad, genero y nombre
@@ -221,8 +228,11 @@ class _EdadGeneroPageScreenState extends State<EdadGeneroPageScreen> {
                           int.parse(ageController.text),
                           selectedGender ?? "",
                           isProfileComplete);
-                      Navigator.pushNamed(context, '/localidadOcupacion',
-                          arguments: email);
+                      Navigator.pushNamed(
+                        context,
+                        '/localidadOcupacion',
+                        arguments: {"email": email, "token": widget.token},
+                      );
                     }
                   },
                   child: Text("Siguiente"),

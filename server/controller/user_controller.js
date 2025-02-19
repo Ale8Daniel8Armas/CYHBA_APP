@@ -1,28 +1,46 @@
-const userService = require("../services/user_service.js");
-const UserModel = require("../model/user_model.js");
 const calculateBMI = require("../utils/CalculateBMI.js");
 const calculateSTU = require("../utils/CalculateAlcoholComsumption.js");
+const userService = require("../services/user_service.js");
+const UserModel = require("../model/user_model.js");
 
 exports.register = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Verificar si el usuario ya existe
-    const existingUser = await userService.checkuser(email);
-    if (existingUser) {
-      return res
-        .status(400)
-        .json({ status: false, message: "El usuario ya existe" });
+    if (!email || !password) {
+      return res.status(400).json({
+        status: false,
+        message: "Email y contraseña son requeridos",
+      });
     }
 
-    const successRes = await userService.registerUser(email, password);
+    // Check if user exists
+    const existingUser = await userService.checkuser(email);
+    if (existingUser) {
+      return res.status(400).json({
+        status: false,
+        message: "El usuario ya existe",
+      });
+    }
+
+    // Register new user
+    const user = await userService.registerUser(email, password);
+
+    // Generate initial token
+    const token = await userService.generateToken(
+      { _id: user._id, email: user.email },
+      "secretkey",
+      "1h"
+    );
 
     res.status(200).json({
       status: true,
       message: "Usuario registrado satisfactoriamente",
-      user: successRes,
+      token,
+      user,
     });
   } catch (error) {
+    console.error("Error en registro:", error);
     res.status(400).json({
       status: false,
       message: error.message,
@@ -32,39 +50,60 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   try {
-    console.log("Datos recibidos:", req.body);
+    console.log("Intento de login - Datos recibidos:", {
+      email: req.body.email,
+      passwordLength: req.body.password?.length,
+    });
 
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res
-        .status(400)
-        .json({ status: false, message: "Faltan campos requeridos" });
+      return res.status(400).json({
+        status: false,
+        message: "Email y contraseña son requeridos",
+      });
     }
 
+    // Find user
     const user = await userService.checkuser(email);
-
     if (!user) {
-      throw new Error("Usuario no existe");
+      return res.status(401).json({
+        status: false,
+        message: "Usuario no encontrado",
+      });
     }
 
-    console.log("Contraseña ingresada:", password);
-    console.log("Contraseña almacenada (hash):", user.password);
-
-    const isMatch = await user.comparePassword(password);
-    console.log("¿Coincide la contraseña?:", isMatch);
-
+    // Verify password
+    const isMatch = await userService.verifyPassword(user, password);
     if (!isMatch) {
-      throw new Error("Contraseña inválida");
+      console.log("Contraseña incorrecta para usuario:", email);
+      return res.status(401).json({
+        status: false,
+        message: "Contraseña inválida",
+      });
     }
 
-    const tokenData = { _id: user._id, email: user.email };
-    const token = await userService.generateToken(tokenData, "secretkey", "1h");
+    // Generate token
+    const token = await userService.generateToken(
+      { _id: user._id, email: user.email },
+      "secretkey",
+      "1h"
+    );
 
-    res.status(200).json({ status: true, token });
+    res.status(200).json({
+      status: true,
+      token,
+      user: {
+        email: user.email,
+        // Add other non-sensitive user data as needed
+      },
+    });
   } catch (error) {
-    console.error("Error en login:", error.message);
-    res.status(400).json({ status: false, message: error.message });
+    console.error("Error en login:", error);
+    res.status(500).json({
+      status: false,
+      message: "Error en el servidor",
+    });
   }
 };
 

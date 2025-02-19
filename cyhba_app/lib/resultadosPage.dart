@@ -87,7 +87,36 @@ class _ResultadosScreenState extends State<ResultadosScreen> {
               }
             }
 
+            //int diseaseInt = int.parse(disease);
+
             // Asignamos la enfermedad con la mayor probabilidad
+            if (disease == 'Alcohol use disorders') {
+              disease = 'Arritmia';
+            } else if (disease == 'Aortic aneurysm') {
+              disease = 'Aneurisma aórtico';
+            } else if (disease == 'Atrial fibrillation and flutter') {
+              disease = 'Fibrilación y aleteo auricular';
+            } else if (disease == 'Cardiomyopathy and myocarditis') {
+              disease = 'Miocardiopatía y miocarditis';
+            } else if (disease == 'Endocarditis') {
+              disease = 'Endocarditis';
+            } else if (disease == 'Hypertensive heart disease') {
+              disease = 'Enfermedad cardíaca hipertensiva';
+            } else if (disease == 'Ischemic heart disease') {
+              disease = 'Cardiopatía isquémica';
+            } else if (disease ==
+                'Lower extremity peripheral arterial disease') {
+              disease = 'Enfermedad arterial periférica';
+            } else if (disease == 'Non-rheumatic valvular heart disease') {
+              disease = 'Valvulopatía cardíaca no reumática';
+            } else if (disease == 'Pulmonary Arterial Hypertension') {
+              disease = 'Hipertensión arterial pulmonar';
+            } else if (disease == 'Rheumatic heart disease') {
+              disease = 'Enfermedad cardíaca reumática';
+            } else {
+              disease = 'Punzoneos no letales';
+            }
+
             predictionResult =
                 "$disease con ${highestProbability.toStringAsFixed(2)}% de probabilidad";
           } else {

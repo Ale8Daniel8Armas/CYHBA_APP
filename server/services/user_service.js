@@ -4,16 +4,26 @@ const jwt = require("jsonwebtoken");
 class UserService {
   static async registerUser(email, password) {
     try {
-      const createUser = new UserModel({ email, password });
-      return await createUser.save();
-    } catch (err) {
-      throw err;
+      // Create new user instance
+      const user = new UserModel({
+        email: email.toLowerCase(),
+        password: password, // Will be hashed by pre-save middleware
+      });
+
+      // Save user
+      const savedUser = await user.save();
+
+      // Return user without password
+      const { password: _, ...userWithoutPassword } = savedUser.toObject();
+      return userWithoutPassword;
+    } catch (error) {
+      throw error;
     }
   }
 
   static async checkuser(email) {
     try {
-      return await UserModel.findOne({ email });
+      return await UserModel.findOne({ email: email.toLowerCase() });
     } catch (err) {
       throw err;
     }
@@ -21,6 +31,17 @@ class UserService {
 
   static async generateToken(tokenData, secretkey, jwt_expire) {
     return jwt.sign(tokenData, secretkey, { expiresIn: jwt_expire });
+  }
+
+  static async verifyPassword(user, password) {
+    try {
+      console.log("Verifying password for user:", user.email);
+      const isMatch = await user.comparePassword(password);
+      console.log("Password verification result:", isMatch);
+      return isMatch;
+    } catch (error) {
+      throw error;
+    }
   }
 
   // Función para actualizar nombre, edad y género

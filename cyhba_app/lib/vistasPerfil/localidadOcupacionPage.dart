@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/material.dart';
 
 class LocalidadOcupacionPageScreen extends StatefulWidget {
   @override
@@ -11,39 +12,58 @@ class LocalidadOcupacionPageScreen extends StatefulWidget {
 class _LocalidadOcupacionPageScreenState
     extends State<LocalidadOcupacionPageScreen> {
   late String email;
+  late String token;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final arguments = ModalRoute.of(context)?.settings.arguments;
+    final arguments =
+        ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
     if (arguments != null) {
-      email = arguments as String;
+      email = arguments['email'];
+      token = arguments['token'];
+      _getToken();
     } else {
-      // Redirigir al login si no hay email
       Navigator.pushReplacementNamed(context, '/login');
     }
   }
 
-  //funcion back para actualizar datos del usuario por localidad y ocupacion
+  Future<void> _getToken() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? savedToken = prefs.getString('token');
+    if (savedToken == null || savedToken.isEmpty) {
+      Navigator.pushReplacementNamed(context, '/login');
+    } else {
+      setState(() {
+        token = savedToken;
+      });
+      print("🔑 Token recuperado: $token");
+    }
+  }
+
+  // Función para actualizar datos del usuario por localidad y ocupación
   Future<void> actualizarUsuarioLocalidadOcupacion(
       String localidad, String ocupacion) async {
     final url = Uri.parse("http://localhost:4000/updateLO");
 
     final response = await http.put(
       url,
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token", // 🔑 Añadir el token aquí
+      },
       body: jsonEncode(
           {"email": email, "localidad": localidad, "ocupacion": ocupacion}),
     );
 
     if (response.statusCode == 200) {
-      print("Datos de localidad y ocupación actualizados correctamente");
+      print("✅ Datos de localidad y ocupación actualizados correctamente");
     } else {
-      print("Error al actualizar: ${response.body}");
+      print("❌ Error al actualizar: ${response.body}");
     }
   }
 
-  //variables
+  // Variables
   String? selectedRegion;
   String? selectedOcupation;
 

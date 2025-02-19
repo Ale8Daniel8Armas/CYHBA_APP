@@ -274,7 +274,7 @@ class _CantidadConsumoScreenState extends State<CantidadConsumoScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Número de cervezas al día: $numberOfBeers'),
+                  Text('Número de cervezas a la semana: $numberOfBeers'),
                   Expanded(
                     child: Slider(
                       value: numberOfBeers.toDouble(),
@@ -329,7 +329,7 @@ class _CantidadConsumoScreenState extends State<CantidadConsumoScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Número de vinos al día: $numberOfVines'),
+                  Text('Número de vinos a la semana: $numberOfVines'),
                   Expanded(
                     child: Slider(
                       value: numberOfVines.toDouble(),
@@ -376,7 +376,7 @@ class _CantidadConsumoScreenState extends State<CantidadConsumoScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Número de vodkas al día: $numberOfVodkas'),
+                  Text('Número de vodkas a la semana $numberOfVodkas'),
                   Expanded(
                     child: Slider(
                       value: numberOfVodkas.toDouble(),
@@ -423,7 +423,8 @@ class _CantidadConsumoScreenState extends State<CantidadConsumoScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Número de bebidas espumosas al día: $numberOfChampans'),
+                  Text(
+                      'Número de bebidas espumosas a la semana: $numberOfChampans'),
                   Expanded(
                     child: Slider(
                       value: numberOfChampans.toDouble(),
@@ -470,7 +471,7 @@ class _CantidadConsumoScreenState extends State<CantidadConsumoScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Número de aguardientes al día: $numberOfBrandys'),
+                  Text('Número de aguardientes a la semana: $numberOfBrandys'),
                   Expanded(
                     child: Slider(
                       value: numberOfBrandys.toDouble(),
