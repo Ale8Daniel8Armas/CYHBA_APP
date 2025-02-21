@@ -4,16 +4,13 @@ const jwt = require("jsonwebtoken");
 class UserService {
   static async registerUser(email, password) {
     try {
-      // Create new user instance
       const user = new UserModel({
         email: email.toLowerCase(),
-        password: password, // Will be hashed by pre-save middleware
+        password: password,
       });
 
-      // Save user
       const savedUser = await user.save();
 
-      // Return user without password
       const { password: _, ...userWithoutPassword } = savedUser.toObject();
       return userWithoutPassword;
     } catch (error) {

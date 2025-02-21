@@ -5,7 +5,7 @@ const User = require("../model/user_model");
 const axios = require("axios");
 const dataPreparationService = require("../services/data_preparation_service.js");
 
-const ML_SERVICE_URL = "http://localhost:5000/predict";
+const ML_SERVICE_URL = "http://192.168.1.5:5000/predict";
 
 router.post("/predict", async (req, res) => {
   try {
@@ -25,7 +25,7 @@ router.post("/predict", async (req, res) => {
       user.toObject()
     );
 
-    console.log(preparedData); 
+    console.log(preparedData);
 
     // Hacer la predicción
     const prediction = await axios.post(ML_SERVICE_URL, preparedData);

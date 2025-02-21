@@ -529,7 +529,9 @@ exports.updateSTU = async (req, res) => {
       } else if (consumoInicial >= 22) {
         consumoAlcohol = "Alto";
       }
-    } else if (user.genero == "Femenino") {
+    }
+
+    if (user.genero == "Femenino") {
       if (consumoInicial <= 4) {
         consumoAlcohol = "Nada";
       } else if (consumoInicial <= 7) {
@@ -539,7 +541,9 @@ exports.updateSTU = async (req, res) => {
       } else if (consumoInicial >= 15) {
         consumoAlcohol = "Alto";
       }
-    } else {
+    }
+
+    if (user.genero == "Otro") {
       if (consumoInicial <= 6) {
         consumoAlcohol = "Nada";
       } else if (consumoInicial <= 11) {

@@ -27,6 +27,7 @@ router.get(
   "/getUnidadesAlcohol/:email",
   UserController.getUnidadesAlcoholByEmail
 );
+
 router.get("/getConsumo/:email", UserController.getConsumoPorDiasByEmail);
 router.get("/getFrecuencia/:email", UserController.getFrecuenciaSemanalByEmail);
 router.put("/calcularConsumo", UserController.updateSTU);

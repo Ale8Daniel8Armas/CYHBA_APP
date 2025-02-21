@@ -4,7 +4,7 @@
   "description": "cyhba app project development with flutter and mongo express tools",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
     "dev": "nodemon index"
   },
   "author": "Danijev",
